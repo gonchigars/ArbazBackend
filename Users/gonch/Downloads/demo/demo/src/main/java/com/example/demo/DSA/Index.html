@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Linked List Algorithms Animation with Pseudocode</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f0f0f0;
+      }
+      .main-container {
+        display: flex;
+        justify-content: space-between;
+      }
+      .left-panel {
+        width: 70%;
+      }
+      .visualization-panel {
+        border: 1px solid #ccc;
+        padding: 10px;
+        min-height: 200px;
+        margin-bottom: 20px;
+      }
+      .pseudocode-panel {
+        border: 1px solid #ccc;
+        padding: 10px;
+        background-color: #fff;
+      }
+      .control-panel {
+        width: 25%;
+        background-color: #e0e0e0;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .node {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        margin-right: 10px;
+        transition: all 0.3s ease;
+      }
+      .node-value {
+        width: 40px;
+        height: 40px;
+        border: 2px solid #333;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #fff;
+        margin-bottom: 5px;
+      }
+      .node-pointer {
+        font-weight: bold;
+        font-size: 12px;
+        height: 20px;
+      }
+      .node-arrow {
+        width: 30px;
+        height: 2px;
+        background-color: #333;
+        position: relative;
+        top: 20px;
+      }
+      .node-arrow::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: -4px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid #333;
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 10px;
+        display: block;
+        width: 100%;
+      }
+      #status {
+        margin-top: 20px;
+        font-weight: bold;
+      }
+      select {
+        width: 100%;
+        padding: 5px;
+        margin-bottom: 10px;
+      }
+      .pseudocode {
+        font-family: monospace;
+        white-space: pre-wrap;
+        line-height: 1.5;
+      }
+      .highlight {
+        background-color: yellow;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Linked List Algorithms Animation with Pseudocode</h1>
+    <div class="main-container">
+      <div class="left-panel">
+        <div class="visualization-panel" id="visualizationPanel">
+          <!-- Linked list will be rendered here -->
+        </div>
+        <div class="pseudocode-panel">
+          <pre class="pseudocode" id="pseudocode"></pre>
+        </div>
+      </div>
+      <div class="control-panel">
+        <select id="algorithmSelect">
+          <option value="fastSlow">Fast & Slow Pointer</option>
+          <option value="reversal">In-Place Reversal</option>
+        </select>
+        <input
+          type="text"
+          id="listInput"
+          placeholder="Enter comma-separated values"
+        />
+        <button onclick="initializeList()">Initialize List</button>
+        <button onclick="nextStep()">Next Step</button>
+        <button onclick="reset()">Reset</button>
+        <div id="status"></div>
+      </div>
+    </div>
+
+    <script>
+      let linkedList = [];
+      let slow = 0,
+        fast = 0;
+      let current = 0,
+        prev = null,
+        next = null;
+      let algorithmType = "fastSlow";
+      let step = 0;
+
+      const fastSlowPseudocode = `1  function detectCycle(head):
+2      slow = head
+3      fast = head
+4      while fast is not null and fast.next is not null:
+5          slow = slow.next
+6          fast = fast.next.next
+7          if slow == fast:
+8              return true  // Cycle detected
+9      return false  // No cycle`;
+
+      const reversalPseudocode = `1  function reverseList(head):
+2      prev = null
+3      current = head
+4      while current is not null:
+5          next = current.next
+6          current.next = prev
+7          prev = current
+8          current = next
+9      return prev  // New head of reversed list`;
+
+      function initializeList() {
+        const input = document.getElementById("listInput").value;
+        linkedList = input.split(",").map((x) => parseInt(x.trim()));
+        algorithmType = document.getElementById("algorithmSelect").value;
+        slow = 0;
+        fast = 0;
+        current = 0;
+        prev = null;
+        next = null;
+        step = 0;
+        updateVisualization();
+        updatePseudocode();
+        document.getElementById("status").textContent =
+          "List initialized. Click Next Step to begin.";
+      }
+
+      function nextStep() {
+        if (algorithmType === "fastSlow") {
+          fastSlowStep();
+        } else {
+          reversalStep();
+        }
+        updateVisualization();
+      }
+
+      function fastSlowStep() {
+        if (fast >= linkedList.length || fast + 1 >= linkedList.length) {
+          document.getElementById("status").textContent =
+            "Algorithm completed. Fast pointer reached the end.";
+          highlightPseudocode(9);
+          return;
+        }
+        slow++;
+        fast += 2;
+        step++;
+        document.getElementById(
+          "status"
+        ).textContent = `Step ${step}: Slow moves to index ${slow}, Fast moves to index ${fast}`;
+        highlightPseudocode([5, 6]);
+      }
+
+      function reversalStep() {
+        if (current >= linkedList.length) {
+          document.getElementById("status").textContent = "Reversal completed.";
+          highlightPseudocode(9);
+          return;
+        }
+        next = current + 1;
+        const temp = linkedList[current];
+        linkedList[current] = prev !== null ? linkedList[prev] : null;
+        if (prev !== null) linkedList[prev] = temp;
+        prev = current;
+        current = next;
+        step++;
+        document.getElementById(
+          "status"
+        ).textContent = `Step ${step}: Reversed up to index ${prev}`;
+        highlightPseudocode([5, 6, 7, 8]);
+      }
+
+      function updateVisualization() {
+        const panel = document.getElementById("visualizationPanel");
+        panel.innerHTML = "";
+        linkedList.forEach((value, index) => {
+          const nodeContainer = document.createElement("div");
+          nodeContainer.className = "node";
+
+          const nodeValue = document.createElement("div");
+          nodeValue.className = "node-value";
+          nodeValue.textContent = value;
+
+          const nodePointer = document.createElement("div");
+          nodePointer.className = "node-pointer";
+
+          if (algorithmType === "fastSlow") {
+            if (index === slow && index === fast) {
+              nodePointer.textContent = "S, F";
+              nodePointer.style.color = "purple";
+            } else if (index === slow) {
+              nodePointer.textContent = "S";
+              nodePointer.style.color = "blue";
+            } else if (index === fast) {
+              nodePointer.textContent = "F";
+              nodePointer.style.color = "red";
+            }
+          } else {
+            if (index === current) {
+              nodeValue.style.borderColor = "green";
+            }
+          }
+
+          nodeContainer.appendChild(nodeValue);
+          nodeContainer.appendChild(nodePointer);
+
+          if (index < linkedList.length - 1) {
+            const nodeArrow = document.createElement("div");
+            nodeArrow.className = "node-arrow";
+            nodeContainer.appendChild(nodeArrow);
+          }
+
+          panel.appendChild(nodeContainer);
+        });
+      }
+
+      function updatePseudocode() {
+        const pseudocodeElement = document.getElementById("pseudocode");
+        pseudocodeElement.innerHTML =
+          algorithmType === "fastSlow"
+            ? fastSlowPseudocode
+            : reversalPseudocode;
+      }
+
+      function highlightPseudocode(lines) {
+        const pseudocodeElement = document.getElementById("pseudocode");
+        const codeLines = pseudocodeElement.innerHTML.split("\n");
+        codeLines.forEach((line, index) => {
+          if (
+            Array.isArray(lines)
+              ? lines.includes(index + 1)
+              : index + 1 === lines
+          ) {
+            codeLines[index] = `<span class="highlight">${line}</span>`;
+          } else {
+            codeLines[index] = line.replace(/<\/?span[^>]*>/g, "");
+          }
+        });
+        pseudocodeElement.innerHTML = codeLines.join("\n");
+      }
+
+      function reset() {
+        initializeList();
+      }
+
+      // Initialize with a default list
+      document.getElementById("listInput").value = "1,2,3,4,5,6";
+      initializeList();
+    </script>
+  </body>
+</html>
